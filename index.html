@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login with Facebook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+            overflow: auto;
+        }
+        #loginSection {
+            text-align: center;
+        }
+        #accountsSection {
+            margin-top: 30px;
+            width: 100%;
+            text-align: center;
+            transition: all 0.5s ease; /* Adding smooth transition */
+        }
+        .account {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 300px;
+            margin-bottom: 10px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+        .account img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        button {
+            background-color: #4267b2;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .switchBtn {
+            background-color: #34b7f1;
+        }
+
+        /* Smooth fadeIn animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginSection">
+            <h1>Login with Facebook</h1>
+            <button id="loginBtn">Login with Facebook</button>
+        </div>
+        <div id="accountsSection">
+            <h2>Accounts</h2>
+            <div id="accountsList"></div>
+        </div>
+    </div>
+
+    <script src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <script>
+        // Initialize the Facebook SDK
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : 'YOUR_APP_ID',  // ضع هنا ID التطبيق الخاص بك من فيسبوك
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v15.0'
+            });
+        };
+
+        // Login function
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    // Fetch user details after login
+                    FB.api('/me', function(user) {
+                        console.log('Logged in user:', user);
+                        displayAccount(user);
+                    });
+                }
+            }, {scope: 'public_profile,email'});
+        });
+
+        // Display logged-in account
+        function displayAccount(user) {
+            const accountsList = document.getElementById('accountsList');
+            const accountElement = document.createElement('div');
+            accountElement.className = 'account';
+            accountElement.innerHTML = `
+                <img src="https://graph.facebook.com/${user.id}/picture?type=small" alt="Profile Picture">
+                <span>${user.name}</span>
+                <button class="switchBtn" onclick="switchAccount('${user.id}')">Switch</button>
+            `;
+            accountsList.appendChild(accountElement);
+
+            // Smooth scroll down to the newly added account
+            accountsList.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Switch between accounts (opens a new window with the account profile)
+        function switchAccount(accountId) {
+            const profileUrl = `https://www.facebook.com/${accountId}`;
+            window.open(profileUrl, '_blank');  // Opens the account in a new window/tab
+        }
+    </script>
+</body>
+</html>
