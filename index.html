@@ -1,13 +1,13 @@
 <script>
     window.fbAsyncInit = function() {
         FB.init({
-            appId      : '444076535464757',  // معرف التطبيق
+            appId      : '444076535464757', // معرف التطبيق
             cookie     : true,
             xfbml      : true,
             version    : 'v17.0'
         });
 
-        FB.AppEvents.logPageView();   
+        FB.AppEvents.logPageView();
     };
 
     (function(d, s, id){
@@ -17,34 +17,17 @@
         js.src = "https://connect.facebook.net/en_US/sdk.js";
         fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
-</script>
 
-<!-- زر تسجيل الدخول -->
-<button onclick="facebookLogin()">تسجيل الدخول باستخدام فيسبوك</button>
-
-<!-- عرض الحسابات في قسم منفصل -->
-<div id="accountsContainer"></div>
-
-<script>
-    // تسجيل الدخول إلى فيسبوك
+    // تسجيل الدخول باستخدام فيسبوك
     function facebookLogin() {
         FB.login(function(response) {
             if (response.authResponse) {
                 console.log('تم تسجيل الدخول بنجاح!');
                 FB.api('/me', {fields: 'name,email,picture'}, function(user) {
                     console.log('مرحبًا ' + user.name);
-                    console.log('بريدك الإلكتروني: ' + user.email);
-                    console.log('صورتك: ' + user.picture.data.url);
 
-                    // حفظ بيانات الحساب في LocalStorage
-                    let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
-                    accounts.push({
-                        name: user.name,
-                        email: user.email,
-                        picture: user.picture.data.url
-                    });
-
-                    localStorage.setItem('facebookAccounts', JSON.stringify(accounts));
+                    // حفظ بيانات الحساب
+                    saveAccount(user);
 
                     // تحديث عرض الحسابات
                     displayAccounts();
@@ -55,19 +38,41 @@
         }, {scope: 'email,public_profile'});
     }
 
+    // حفظ بيانات الحساب في LocalStorage
+    function saveAccount(user) {
+        let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
+
+        // التحقق من عدم تكرار الحساب
+        if (!accounts.some(account => account.email === user.email)) {
+            accounts.push({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                picture: user.picture.data.url
+            });
+            localStorage.setItem('facebookAccounts', JSON.stringify(accounts));
+        } else {
+            console.log('الحساب موجود مسبقًا.');
+        }
+    }
+
     // عرض الحسابات المخزنة
     function displayAccounts() {
         let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
         let accountsContainer = document.getElementById('accountsContainer');
-        accountsContainer.innerHTML = ''; // مسح الحسابات الحالية قبل إضافة الجديدة
+        accountsContainer.innerHTML = ''; // مسح المحتوى القديم
 
         accounts.forEach(account => {
             let accountDiv = document.createElement('div');
             accountDiv.classList.add('account');
             accountDiv.innerHTML = `
-                <img src="${account.picture}" alt="${account.name}" />
-                <p>${account.name}</p>
-                <a href="https://www.facebook.com/${account.email}" target="_blank">فتح الحساب في نافذة جديدة</a>
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <img src="${account.picture}" alt="${account.name}" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;" />
+                    <div>
+                        <p style="margin: 0;">${account.name}</p>
+                        <a href="https://www.facebook.com/${account.id}" target="_blank">فتح الحساب</a>
+                    </div>
+                </div>
             `;
             accountsContainer.appendChild(accountDiv);
         });
@@ -75,4 +80,12 @@
 
     // استرجاع الحسابات عند تحميل الصفحة
     window.onload = displayAccounts;
-        </script>
+</script>
+
+<!-- زر تسجيل الدخول -->
+<button onclick="facebookLogin()">تسجيل الدخول باستخدام فيسبوك</button>
+
+<!-- عرض الحسابات -->
+<div id="accountsContainer" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+    <h3>الحسابات المسجلة:</h3>
+</div>
