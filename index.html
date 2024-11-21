@@ -1,64 +1,67 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول باستخدام فيسبوك</title>
+    <title>Facebook Login Tool</title>
     <style>
-        /* تأثير الخلفية المتحركة */
+        /* تصميم عام للصفحة */
         body {
-            background-color: black;
-            color: #00FF00; /* اللون الأخضر الخاص بالحروف */
-            font-family: "Courier New", Courier, monospace;
-            overflow: hidden;
+            font-family: Arial, sans-serif;
             margin: 0;
-            height: 100vh;
+            padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            position: relative;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
         }
 
-        /* خلفية تسقط الحروف */
-        .background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-            pointer-events: none;
+        /* تحسين زر تسجيل الدخول */
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
-        /* الشبكة لعرض الحسابات */
+        button:hover {
+            background-color: #145dbf;
+        }
+
+        /* تصميم الحاوية التي تحتوي على الحسابات */
         #accountsContainer {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr); /* 8 حسابات في كل صف */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 20px;
             margin-top: 30px;
             padding: 20px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 100%;
-            overflow-x: auto;
+            max-width: 90%;
         }
 
+        /* تصميم حساب واحد */
         .account {
             text-align: center;
-            width: 100%;
+            width: 150px;
             padding: 10px;
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-width: 120px;
-            margin: 0 auto;
         }
 
         .account img {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             margin-bottom: 10px;
         }
@@ -79,64 +82,26 @@
         .account a:hover {
             text-decoration: underline;
         }
-
-        /* زر تسجيل الدخول */
-        button {
-            padding: 10px 20px;
-            background-color: #1877f2;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #365899;
-        }
-
-        /* خلفية تسقط الحروف مثل الترمنال */
-        .falling-text {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #00FF00;
-            font-size: 20px;
-            white-space: nowrap;
-            animation: fall 5s infinite linear;
-        }
-
-        @keyframes fall {
-            0% { top: -100px; }
-            100% { top: 100vh; }
-        }
     </style>
 </head>
 <body>
-    <!-- تأثير الخلفية المتحركة -->
-    <div class="background"></div>
-
-    <!-- حروف تتساقط مثل الترمنال -->
-    <div class="falling-text">> النظام جاهز...</div>
-
     <!-- زر تسجيل الدخول -->
     <button onclick="facebookLogin()">تسجيل الدخول باستخدام فيسبوك</button>
 
     <!-- عرض الحسابات في قسم منفصل -->
     <div id="accountsContainer"></div>
 
+    <!-- تضمين مكتبة Facebook SDK -->
     <script>
-        // تحميل Facebook SDK
         window.fbAsyncInit = function() {
             FB.init({
-                appId      : '444076535464757',
+                appId      : '444076535464757',  // معرف التطبيق
                 cookie     : true,
                 xfbml      : true,
                 version    : 'v17.0'
             });
 
-            FB.AppEvents.logPageView();
+            FB.AppEvents.logPageView();   
         };
 
         (function(d, s, id){
@@ -146,7 +111,9 @@
             js.src = "https://connect.facebook.net/en_US/sdk.js";
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
+    </script>
 
+    <script>
         // تسجيل الدخول إلى فيسبوك
         function facebookLogin() {
             FB.login(function(response) {
