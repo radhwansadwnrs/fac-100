@@ -1,91 +1,168 @@
-<script>
-    window.fbAsyncInit = function() {
-        FB.init({
-            appId      : '444076535464757', // معرف التطبيق
-            cookie     : true,
-            xfbml      : true,
-            version    : 'v17.0'
-        });
-
-        FB.AppEvents.logPageView();
-    };
-
-    (function(d, s, id){
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) {return;}
-        js = d.createElement(s); js.id = id;
-        js.src = "https://connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-
-    // تسجيل الدخول باستخدام فيسبوك
-    function facebookLogin() {
-        FB.login(function(response) {
-            if (response.authResponse) {
-                console.log('تم تسجيل الدخول بنجاح!');
-                FB.api('/me', {fields: 'name,email,picture'}, function(user) {
-                    console.log('مرحبًا ' + user.name);
-
-                    // حفظ بيانات الحساب
-                    saveAccount(user);
-
-                    // تحديث عرض الحسابات
-                    displayAccounts();
-                });
-            } else {
-                console.log('لم يتم تسجيل الدخول.');
-            }
-        }, {scope: 'email,public_profile'});
-    }
-
-    // حفظ بيانات الحساب في LocalStorage
-    function saveAccount(user) {
-        let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
-
-        // التحقق من عدم تكرار الحساب
-        if (!accounts.some(account => account.email === user.email)) {
-            accounts.push({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                picture: user.picture.data.url
-            });
-            localStorage.setItem('facebookAccounts', JSON.stringify(accounts));
-        } else {
-            console.log('الحساب موجود مسبقًا.');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Login Tool</title>
+    <style>
+        /* تصميم عام للصفحة */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
         }
-    }
 
-    // عرض الحسابات المخزنة
-    function displayAccounts() {
-        let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
-        let accountsContainer = document.getElementById('accountsContainer');
-        accountsContainer.innerHTML = ''; // مسح المحتوى القديم
+        /* تحسين زر تسجيل الدخول */
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
 
-        accounts.forEach(account => {
-            let accountDiv = document.createElement('div');
-            accountDiv.classList.add('account');
-            accountDiv.innerHTML = `
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                    <img src="${account.picture}" alt="${account.name}" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;" />
-                    <div>
-                        <p style="margin: 0;">${account.name}</p>
-                        <a href="https://www.facebook.com/${account.id}" target="_blank">فتح الحساب</a>
-                    </div>
-                </div>
-            `;
-            accountsContainer.appendChild(accountDiv);
-        });
-    }
+        button:hover {
+            background-color: #145dbf;
+        }
 
-    // استرجاع الحسابات عند تحميل الصفحة
-    window.onload = displayAccounts;
-</script>
+        /* تصميم الحاوية التي تحتوي على الحسابات */
+        #accountsContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+        }
 
-<!-- زر تسجيل الدخول -->
-<button onclick="facebookLogin()">تسجيل الدخول باستخدام فيسبوك</button>
+        /* تصميم حساب واحد */
+        .account {
+            text-align: center;
+            width: 150px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-<!-- عرض الحسابات -->
-<div id="accountsContainer" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-    <h3>الحسابات المسجلة:</h3>
-</div>
+        .account img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .account p {
+            margin: 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .account a {
+            display: block;
+            margin-top: 5px;
+            color: #1877f2;
+            text-decoration: none;
+        }
+
+        .account a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- زر تسجيل الدخول -->
+    <button onclick="facebookLogin()">تسجيل الدخول باستخدام فيسبوك</button>
+
+    <!-- عرض الحسابات في قسم منفصل -->
+    <div id="accountsContainer"></div>
+
+    <!-- تضمين مكتبة Facebook SDK -->
+    <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : '444076535464757',  // معرف التطبيق
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v17.0'
+            });
+
+            FB.AppEvents.logPageView();   
+        };
+
+        (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <script>
+        // تسجيل الدخول إلى فيسبوك
+        function facebookLogin() {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    console.log('تم تسجيل الدخول بنجاح!');
+                    FB.api('/me', {fields: 'name,email,picture'}, function(user) {
+                        console.log('مرحبًا ' + user.name);
+                        console.log('بريدك الإلكتروني: ' + user.email);
+                        console.log('صورتك: ' + user.picture.data.url);
+
+                        // حفظ بيانات الحساب في LocalStorage
+                        let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
+                        accounts.push({
+                            name: user.name,
+                            email: user.email,
+                            picture: user.picture.data.url
+                        });
+
+                        localStorage.setItem('facebookAccounts', JSON.stringify(accounts));
+
+                        // تحديث عرض الحسابات
+                        displayAccounts();
+                    });
+                } else {
+                    console.log('لم يتم تسجيل الدخول.');
+                }
+            }, {scope: 'email,public_profile'});
+        }
+
+        // عرض الحسابات المخزنة
+        function displayAccounts() {
+            let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
+            let accountsContainer = document.getElementById('accountsContainer');
+            accountsContainer.innerHTML = ''; // مسح الحسابات الحالية قبل إضافة الجديدة
+
+            accounts.forEach(account => {
+                let accountDiv = document.createElement('div');
+                accountDiv.classList.add('account');
+                accountDiv.innerHTML = `
+                    <img src="${account.picture}" alt="${account.name}" />
+                    <p>${account.name}</p>
+                    <a href="https://www.facebook.com/${account.email}" target="_blank">فتح الحساب في نافذة جديدة</a>
+                `;
+                accountsContainer.appendChild(accountDiv);
+            });
+        }
+
+        // استرجاع الحسابات عند تحميل الصفحة
+        window.onload = displayAccounts;
+    </script>
+</body>
+</html>
