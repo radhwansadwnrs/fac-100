@@ -1,67 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Login Tool</title>
+    <title>تسجيل الدخول باستخدام فيسبوك</title>
     <style>
-        /* تصميم عام للصفحة */
+        /* إعدادات الصفحة */
         body {
-            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            font-family: "Courier New", Courier, monospace;
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            background-color: #f0f0f0;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* تحسين زر تسجيل الدخول */
+        /* زر تسجيل الدخول */
         button {
-            font-size: 18px;
             padding: 10px 20px;
             background-color: #1877f2;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
             margin-top: 20px;
         }
 
         button:hover {
-            background-color: #145dbf;
+            background-color: #365899;
         }
 
-        /* تصميم الحاوية التي تحتوي على الحسابات */
+        /* عرض الحسابات في شبكة */
         #accountsContainer {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr); /* 8 حسابات في كل صف */
             gap: 20px;
             margin-top: 30px;
             padding: 20px;
-            background-color: white;
+            background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 90%;
+            max-width: 100%;
+            overflow-x: auto;
+            width: 100%;
         }
 
-        /* تصميم حساب واحد */
         .account {
             text-align: center;
-            width: 150px;
             padding: 10px;
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 120px; /* تصغير حجم الحساب */
+            margin: 0 auto;
         }
 
         .account img {
-            width: 100px;
-            height: 100px;
+            width: 60px;  /* تصغير صورة الحساب */
+            height: 60px;
             border-radius: 50%;
             margin-bottom: 10px;
         }
@@ -69,7 +73,7 @@
         .account p {
             margin: 0;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px; /* تصغير النص */
         }
 
         .account a {
@@ -82,6 +86,7 @@
         .account a:hover {
             text-decoration: underline;
         }
+
     </style>
 </head>
 <body>
@@ -91,8 +96,8 @@
     <!-- عرض الحسابات في قسم منفصل -->
     <div id="accountsContainer"></div>
 
-    <!-- تضمين مكتبة Facebook SDK -->
     <script>
+        // تحميل Facebook SDK
         window.fbAsyncInit = function() {
             FB.init({
                 appId      : '444076535464757',  // معرف التطبيق
@@ -101,7 +106,7 @@
                 version    : 'v17.0'
             });
 
-            FB.AppEvents.logPageView();   
+            FB.AppEvents.logPageView();
         };
 
         (function(d, s, id){
@@ -111,9 +116,7 @@
             js.src = "https://connect.facebook.net/en_US/sdk.js";
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
-    </script>
 
-    <script>
         // تسجيل الدخول إلى فيسبوك
         function facebookLogin() {
             FB.login(function(response) {
