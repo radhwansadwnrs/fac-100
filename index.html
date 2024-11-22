@@ -13,11 +13,28 @@
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+        }
+
+        /* رأس الصفحة */
+        #header {
+            width: 100%;
+            background-color: #222;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #header h1 {
+            margin: 0;
+            font-size: 36px;
+            color: #00bcd4; /* لون مميز */
+            font-family: "Courier New", Courier, monospace; /* خط يشبه الهكر */
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
 
         /* تحسين خانة تسجيل الدخول */
@@ -41,6 +58,7 @@
             cursor: pointer;
             width: 100%;
             transition: background-color 0.3s;
+            margin-bottom: 10px;
         }
 
         button:hover {
@@ -50,13 +68,13 @@
         /* حسابات المستخدمين */
         #accountsContainer {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* حسابات مرنة */
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 20px;
             margin-top: 30px;
             padding: 20px;
             max-width: 100%;
             width: 100%;
-            background-color: #1a1a1a;  /* خلفية داكنة للحسابات */
+            background-color: #1a1a1a;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
             overflow-x: auto;
@@ -65,19 +83,19 @@
         .account {
             text-align: center;
             padding: 15px;
-            background-color: #333;  /* خلفية رمادي داكن */
+            background-color: #333;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .account:hover {
-            transform: scale(1.05); /* تأثير التمرير على الحساب */
+            transform: scale(1.05);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
         .account img {
-            width: 80px;  /* حجم الصورة مناسب */
+            width: 80px;
             height: 80px;
             border-radius: 50%;
             margin-bottom: 10px;
@@ -103,10 +121,15 @@
     </style>
 </head>
 <body>
+    <!-- رأس الصفحة -->
+    <div id="header">
+        <h1>OS-ADAM</h1>
+    </div>
 
     <!-- خانة تسجيل الدخول -->
     <div id="loginContainer">
         <button onclick="facebookLogin()">تسجيل الدخول باستخدام فيسبوك</button>
+        <button onclick="logout()">تسجيل الخروج</button>
     </div>
 
     <!-- عرض الحسابات -->
@@ -115,7 +138,7 @@
     <script>
         window.fbAsyncInit = function() {
             FB.init({
-                appId      : '444076535464757',  // معرف التطبيق
+                appId      : '444076535464757',
                 cookie     : true,
                 xfbml      : true,
                 version    : 'v17.0'
@@ -132,27 +155,22 @@
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
 
-        // تسجيل الدخول إلى فيسبوك
         function facebookLogin() {
             FB.login(function(response) {
                 if (response.authResponse) {
-                    console.log('تم تسجيل الدخول بنجاح!');
-                    FB.api('/me', {fields: 'name,email,picture'}, function(user) {
-                        console.log('مرحبًا ' + user.name);
-                        console.log('بريدك الإلكتروني: ' + user.email);
-                        console.log('صورتك: ' + user.picture.data.url);
+                    let accessToken = response.authResponse.accessToken;
+                    localStorage.setItem('facebookAccessToken', accessToken);
 
-                        // حفظ بيانات الحساب في LocalStorage
+                    FB.api('/me', {fields: 'id,name,email,picture'}, function(user) {
                         let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
                         accounts.push({
+                            id: user.id,
                             name: user.name,
                             email: user.email,
                             picture: user.picture.data.url
                         });
-
                         localStorage.setItem('facebookAccounts', JSON.stringify(accounts));
 
-                        // تحديث عرض الحسابات
                         displayAccounts();
                     });
                 } else {
@@ -161,11 +179,10 @@
             }, {scope: 'email,public_profile'});
         }
 
-        // عرض الحسابات المخزنة
         function displayAccounts() {
             let accounts = JSON.parse(localStorage.getItem('facebookAccounts')) || [];
             let accountsContainer = document.getElementById('accountsContainer');
-            accountsContainer.innerHTML = ''; // مسح الحسابات الحالية قبل إضافة الجديدة
+            accountsContainer.innerHTML = '';
 
             accounts.forEach(account => {
                 let accountDiv = document.createElement('div');
@@ -173,14 +190,41 @@
                 accountDiv.innerHTML = `
                     <img src="${account.picture}" alt="${account.name}" />
                     <p>${account.name}</p>
-                    <a href="https://www.facebook.com/${account.email}" target="_blank">فتح الحساب في نافذة جديدة</a>
+                    <a href="https://www.facebook.com/${account.id}" target="_blank">فتح الحساب في نافذة جديدة</a>
                 `;
                 accountsContainer.appendChild(accountDiv);
             });
         }
 
-        // استرجاع الحسابات عند تحميل الصفحة
-        window.onload = displayAccounts;
+        function restoreSession() {
+            let accessToken = localStorage.getItem('facebookAccessToken');
+            if (accessToken) {
+                FB.api('/me', {fields: 'id,name,email,picture', access_token: accessToken}, function(user) {
+                    if (user.error) {
+                        console.log('الجلسة غير صالحة. يرجى تسجيل الدخول مرة أخرى.');
+                        localStorage.removeItem('facebookAccessToken');
+                        return;
+                    }
+                    console.log('تم استعادة الجلسة بنجاح.');
+                    displayAccounts();
+                });
+            } else {
+                console.log('لا توجد جلسة محفوظة.');
+            }
+        }
+
+        function logout() {
+            FB.logout(function(response) {
+                localStorage.removeItem('facebookAccessToken');
+                localStorage.removeItem('facebookAccounts');
+                displayAccounts();
+            });
+        }
+
+        window.onload = function() {
+            restoreSession();
+            displayAccounts();
+        };
     </script>
 </body>
 </html>
